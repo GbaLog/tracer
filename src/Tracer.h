@@ -57,9 +57,9 @@ std::string getLvlStrByInt(int type);
 TraceLevel convertIntToTraceLvl(int type);
 //-----------------------------------------------------------------------------
 #define TRACER_OBJ() _traceObj
-#define TRACE(lvl) (this->TRACER_OBJ()).makeTrace(TraceLevel::lvl, false)
-#define TRACE_SINGLE(lvl, name) TraceObject(name, "").makeTrace(TraceLevel::lvl, false)
-#define TRACE_FORCE(lvl, name) TraceObject(name, "").makeTrace(TraceLevel::lvl, true)
+#define TRACE(lvl) (this->TRACER_OBJ()).makeTrace(lvl, false)
+#define TRACE_SINGLE(lvl, name) TraceObject(name, "").makeTrace(lvl, false)
+#define TRACE_FORCE(lvl, name) TraceObject(name, "").makeTrace(lvl, true)
 //-----------------------------------------------------------------------------
 #endif // RatelTracerH
 //-----------------------------------------------------------------------------

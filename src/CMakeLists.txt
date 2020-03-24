@@ -25,6 +25,3 @@ add_library(libtracer
 if (ENABLE_DEFAULT_WRITERS)
   target_include_directories(libtracer PUBLIC . writers)
 endif()
-
-add_executable(${PROJECT_NAME} main.cpp)
-target_link_libraries(${PROJECT_NAME} libtracer)

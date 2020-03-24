@@ -10,7 +10,7 @@ class ITracerWriter;
 typedef std::shared_ptr<ITracerWriter> TracerWriterPtr;
 typedef std::unordered_set<TracerWriterPtr> SetTraceWriters;
 //-----------------------------------------------------------------------------
-enum class TraceLevel : int
+enum TraceLevel : int
 {
   NON = 0,
   VRB = 1,
