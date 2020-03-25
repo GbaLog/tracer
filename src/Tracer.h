@@ -53,9 +53,6 @@ protected:
   mutable TraceObject _traceObj;
 };
 //-----------------------------------------------------------------------------
-std::string getLvlStrByInt(int type);
-TraceLevel convertIntToTraceLvl(int type);
-//-----------------------------------------------------------------------------
 #define TRACER_OBJ() _traceObj
 #define TRACE(lvl) (this->TRACER_OBJ()).makeTrace(lvl, false)
 #define TRACE_SINGLE(lvl, name) TraceObject(name, "").makeTrace(lvl, false)
