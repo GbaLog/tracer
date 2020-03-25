@@ -31,13 +31,13 @@ Usage is the same as for `TRACE`.
 Usage is the same as for `TRACE`.  
 ##### TraceLevels  
 Nothing interesting here, just 5 levels:
-- `VRB` - Vebose  
+- `VRB` - Verbose  
 - `DBG` - Debug  
 - `WRN` - Warning  
 - `INF` - Info  
 - `ERR` - Error  
 ##### Also you have to create and register `ConsoleWriter` or/and `FileWriter` if you need them.  
-Out of box tracer provides only Console and File writer.
+Out-of-box tracer provides only Console and File writer.
 - ConsoleWriter provides output on console, you can only enable/disable it.  
 - FileWriter has a feature to control file size and number of maximum files.  
   
@@ -94,4 +94,37 @@ This needed if you, for example, want to disable it at all without deleting it.
 ##### Multithreading  
 As I mentioned above, this is not complete solution for logging.  
 `TraceConfig` is singleton and it's not support multithreading, as well as `ConsoleWriter` with `FileWriter`.  
-If you need to add some kind of it, you just have to write your own multithreaded writers.
+If you need to add some kind of it, you just have to write your own multithreaded writers.  
+  
+#### Example of usage  
+```cpp
+#include "Tracer.h"
+//...
+
+class Foo : private Traceable
+{
+  Foo(int id) : Traceable("Foo", id)
+  {
+    TRACE(DBG) << "Constructed";
+  }
+  
+  ~Foo()
+  {
+    TRACE(DBG) << "Destructed";
+  }
+};
+//...
+int main(int argc, char argv *[])
+{
+  //Adding needed writers to the TracerConfig
+  //...
+  {
+    Foo f{42};
+  }
+}
+```
+In case if you added `ConsoleWriter` to the `TracerConfig` it will output:
+```
+200325-091225 [DBG] | Foo          | 42           | Constructed
+200325-091225 [DBG] | Foo          | 42           | Destructed
+```
