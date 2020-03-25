@@ -49,8 +49,9 @@ You just need implement and register them through `TracerConfig`.
 #include "TracerConfig.h"
 #include "ConsoleWriter.h"
 #include "FileWriter.h"
+#include "Tracer.h"
 
-void initLogs()
+bool initTracer()
 {
   FileWriterParams fileWrParams;
   fileWrParams._filePattern = "/var/log/app.log";
@@ -60,9 +61,10 @@ void initLogs()
   try
   {
     auto con = std::make_shared<ConsoleWriter>();
+    TracerConfig::instance().addWriter(con);
+
     //File writer can throw exception if can't create file
     auto file = std::make_shared<FileWriter>(fileWrParams);
-    TracerConfig::instance().addWriter(con);
     TracerConfig::instance().addWriter(file);
   }
   catch (const std::runtime_error & ex)
