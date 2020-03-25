@@ -1,5 +1,12 @@
 # tracer
-Simple tracer
+Simple tracer  
+
+### You must remember that it isn't complete solution for logging.  
+That fact that I provide Console and File writers doesn't mean that you can just take and use them.  
+This project rather... give you a constructor and you should write that you need by yourself.  
+Console and File writers are needed only for simple cases(non-high load/signlethread/etc).  
+If you want more, you should write it yourself.  
+Either with `Traceable` class. You can replace it with whatever you need.
 
 # Instruction in case you want to try it
 1. Add submodule to your project.
@@ -24,11 +31,11 @@ Usage is the same as for `TRACE`.
 Usage is the same as for `TRACE`.  
 ##### TraceLevels  
 Nothing interesting here, just 5 levels:
-- VRB - Vebose  
-- DBG - Debug  
-- WRN - Warning  
-- INF - Info  
-- ERR - Error  
+- `VRB` - Vebose  
+- `DBG` - Debug  
+- `WRN` - Warning  
+- `INF` - Info  
+- `ERR` - Error  
 ##### Also you have to create and register `ConsoleWriter` or/and `FileWriter` if you need them.  
 Out of box tracer provides only Console and File writer.
 - ConsoleWriter provides output on console, you can only enable/disable it.  
@@ -46,7 +53,7 @@ You just need implement and register them through `TracerConfig`.
 void initLogs()
 {
   FileWriterParams fileWrParams;
-  fileWrParams._filePattern = "/var/log/log.log";
+  fileWrParams._filePattern = "/var/log/app.log";
   fileWrParams._maxBytes = 1024 * 1024 * 10; //10 MByte
   fileWrParams._maxFiles = 10;
 
@@ -65,6 +72,26 @@ void initLogs()
   }
   return true;
 }
-```
+```  
+**Note: You have to remember about `try-catch` while use `FileWriter`, because it will throw exception if it can't open log file.**
 
-TODO: Add info about enabling/disabling logging, add more info about standard logging tools(console, file).
+##### Enable/disable particular logging  
+If you want to disable some log level, you can do it globally through `TracerConfig`.  
+Also I want to provide a possibility to disable/enable some log levels for `ConsoleWriter` and `FileWriters` itself.  
+If you write your own writers, you can do it.  
+  
+From `TracerConfig` you can get particular writer through `getWriterByName` function.  
+Every Writer must have unique name!  
+`ConsoleWriter` has `"console"` name.  
+`FileWriter` has `"file"` name.  
+If you added, for example, `ConsoleWriter` to tracer, you can get it like this:  
+```cpp
+auto con = TracerConfig::instance().getWriterByName<ConsoleWriter>("console");
+```  
+This needed if you, for example, want to disable it at all without deleting it.  
+(Both Console and File writers have setEnabled methods).  
+
+##### Multithreading  
+As I mentioned above, this is not complete solution for logging.  
+`TraceConfig` is singleton and it's not support multithreading, as well as `ConsoleWriter` with `FileWriter`.  
+If you need to add some kind of it, you just have to write your own multithreaded writers.
