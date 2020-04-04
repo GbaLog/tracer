@@ -6,9 +6,9 @@
 #include <cstddef>
 #include <cstring>
 #include <filesystem>
-
+//-----------------------------------------------------------------------------
 namespace fs = std::filesystem;
-
+//-----------------------------------------------------------------------------
 FileWriter::FileWriter(const FileWriterParams & params) noexcept(false) :
   _params(params),
   _currentFileNum(0),
@@ -19,14 +19,22 @@ FileWriter::FileWriter(const FileWriterParams & params) noexcept(false) :
     return;
 
   _currentFile = _params._filePattern;
+  if (fs::exists(_currentFile))
+  {
+    _currentFileNum = _params._maxFiles - 1;
+    rotateFiles();
+    moveCurrentFile();
+    _currentFileNum = 0;
+  }
+
   openCurrentFile();
 }
-
+//-----------------------------------------------------------------------------
 FileWriter::~FileWriter()
 {
   closeCurrentFile(true);
 }
-
+//-----------------------------------------------------------------------------
 void FileWriter::setFilePattern(const std::string & filePattern) noexcept(false)
 {
   closeCurrentFile(true);
@@ -34,22 +42,22 @@ void FileWriter::setFilePattern(const std::string & filePattern) noexcept(false)
   _currentFile = _params._filePattern;
   openCurrentFile();
 }
-
+//-----------------------------------------------------------------------------
 void FileWriter::setMaxBytes(uint64_t maxBytes) noexcept
 {
   _params._maxBytes = maxBytes;
 }
-
+//-----------------------------------------------------------------------------
 void FileWriter::setMaxFiles(uint32_t maxFiles) noexcept
 {
   _params._maxFiles = maxFiles;
 }
-
+//-----------------------------------------------------------------------------
 void FileWriter::setEnabled(bool enable) noexcept
 {
   _enabled = enable;
 }
-
+//-----------------------------------------------------------------------------
 void FileWriter::write(const TraceRecord & record)
 {
   if (_enabled == false)
@@ -62,12 +70,12 @@ void FileWriter::write(const TraceRecord & record)
 
   writeImpl(record);
 }
-
+//-----------------------------------------------------------------------------
 std::string FileWriter::getName() const noexcept
 {
   return "file";
 }
-
+//-----------------------------------------------------------------------------
 void FileWriter::openCurrentFile() noexcept(false)
 {
   _file.open(_currentFile, std::ios::trunc);
@@ -98,7 +106,7 @@ void FileWriter::openCurrentFile() noexcept(false)
     _file << "*** This is continue of previous file ***\n";
   }
 }
-
+//-----------------------------------------------------------------------------
 void FileWriter::closeCurrentFile(bool end) noexcept
 {
   if (_file)
@@ -110,7 +118,7 @@ void FileWriter::closeCurrentFile(bool end) noexcept
     _file.close();
   }
 }
-
+//-----------------------------------------------------------------------------
 void FileWriter::writeImpl(const TraceRecord & record)
 {
   //200322-171545 [DBG] | class A      | 1             | text\n
@@ -119,7 +127,7 @@ void FileWriter::writeImpl(const TraceRecord & record)
   writeMsg(record);
   checkSize();
 }
-
+//-----------------------------------------------------------------------------
 void FileWriter::writeTime(time_t t)
 {
   char buf[32] = {};
@@ -129,7 +137,7 @@ void FileWriter::writeTime(time_t t)
   _file << buf;
   _currentByteCount += strlen(buf);
 }
-
+//-----------------------------------------------------------------------------
 void FileWriter::writeObjParams(const TraceRecord & record)
 {
   _file << " [" << convertLvlToString(record._lvl) << "] "
@@ -138,13 +146,13 @@ void FileWriter::writeObjParams(const TraceRecord & record)
         << std::setw(12) << record._objId << " | "
         << std::right;
   // [DBG] | class A      | 1             |
-  //`---'  `------------' `-------------'
+  // `---'  `------------' `-------------'
   //  5          14              15
   // + 5 controls
   //= 5 + 14 + 15 + 5 = 39
   _currentByteCount += 39 + record._objId.size() + record._objName.size();
 }
-
+//-----------------------------------------------------------------------------
 void FileWriter::writeMsg(const TraceRecord & record)
 {
   if (record._str.empty() == false)
@@ -155,7 +163,7 @@ void FileWriter::writeMsg(const TraceRecord & record)
   _file << "\n";
   _currentByteCount += 1;
 }
-
+//-----------------------------------------------------------------------------
 /**
  * @brief This function checks size of current file and rotate files if needed
  * @algorithm
@@ -197,7 +205,7 @@ void FileWriter::checkSize()
   ++_currentFileNum;
   openCurrentFile();
 }
-
+//-----------------------------------------------------------------------------
 /**
  * @brief This function rotates file by file pattern and suffix
  * For example:
@@ -210,20 +218,25 @@ void FileWriter::rotateFiles()
 {
   for (uint32_t it = _currentFileNum; it >= 1; --it)
   {
-    std::string from = _params._filePattern + "." + std::to_string(it);
-    std::string to = _params._filePattern + "." + std::to_string(it + 1);
-    auto pto = fs::path(to);
-    fs::remove(pto);
-    fs::rename(fs::path(from), pto);
+    fs::path from = _params._filePattern + "." + std::to_string(it);
+    fs::path to = _params._filePattern + "." + std::to_string(it + 1);
+    if (fs::exists(from))
+    {
+      fs::remove(to);
+      fs::rename(from, to);
+    }
   }
 }
-
+//-----------------------------------------------------------------------------
 ///< @brief This function renames current file to current file + suffix ".1"
 void FileWriter::moveCurrentFile()
 {
-  std::string from = _currentFile;
-  std::string to = _currentFile + ".1";
-  auto pto = fs::path(to);
-  fs::remove(pto);
-  fs::rename(fs::path(from), pto);
+  fs::path from = _currentFile;
+  fs::path to = _currentFile + ".1";
+  if (fs::exists(from))
+  {
+    fs::remove(to);
+    fs::rename(from, to);
+  }
 }
+//-----------------------------------------------------------------------------
