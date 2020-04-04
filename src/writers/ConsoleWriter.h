@@ -8,6 +8,7 @@ class ConsoleWriter : public ITracerWriter
 {
 public:
   explicit ConsoleWriter(bool enable = true);
+  ~ConsoleWriter();
 
   void setEnabled(bool enable) noexcept;
   bool getEnabled() const noexcept;
@@ -23,6 +24,7 @@ private:
   void writeTime(time_t t);
   void writeObjParams(const TraceRecord & record);
   void writeMsg(const TraceRecord & record);
+  void changeColor(TraceLevel lvl);
 };
 //-----------------------------------------------------------------------------
 #endif // ConsoleWriterH
